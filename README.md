@@ -1,15 +1,12 @@
 bin:  asm, sim
 
-bugs:  bug sample
+bugs:  sample bug programs 
 
-docs:  pdf
+client: cpp work
 
-worlds:  map sample
+docs:  documentation 
 
-Document:  report
+worlds:  sample world maps
 
 git extension:  my progress
 
-README.pdf:     readme from the project
-
-VM_Inf:   instruction to use VM, git 
