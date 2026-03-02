@@ -8,5 +8,5 @@ docs:  documentation
 
 worlds:  sample world maps
 
-git extension:  my progress
+progress:  my progress
 
