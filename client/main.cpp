@@ -22,9 +22,20 @@ int main(int argc, char *argv[])
     std::string redBug = argv[2];
     std::string blackBug = argv[3];
 
+    // options for ticks per frame and fps, with defaults
+    int ticksPerFrame = 50;
+    int fps = 10;
+
+    if (argc >= 5)
+        ticksPerFrame = std::stoi(argv[4]);
+
+    if (argc >= 6)
+        fps = std::stoi(argv[5]);
+
     Simulator client(world, redBug, blackBug);
 
-    if (!client.start()) // Start sim, create pipes
+    // Start sim, create pipes
+    if (!client.start()) // error
     {
         std::cout << "Failed to start simulator\n";
         return 1;

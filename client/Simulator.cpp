@@ -11,7 +11,6 @@
 #include <vector>
 
 /*
-Key Concepts
 mkdir + mkfifo          Create temporary directory and two FIFOs (command & data pipe).
 fork()                  Create child process for simulator.
 execl()                 Replace child process with simulator executable. Arguments match:
@@ -83,14 +82,14 @@ bool Simulator::start()
     std::cout << "Forked simulator with PID: " << simPid << std::endl;
     usleep(500000); // 0.5s to let simulator open pipes
 
-    cmdFd = open(cmdPipe.c_str(), O_WRONLY | O_NONBLOCK); // Open in non-blocking mode and retry:
-    while (cmdFd < 0)
+    cmdFd = open(cmdPipe.c_str(), O_WRONLY); // Open in non-blocking mode and retry:
+    while ((cmdFd = open(cmdPipe.c_str(), O_WRONLY)) < 0)
     {
         usleep(50000); // wait 50ms
-        cmdFd = open(cmdPipe.c_str(), O_WRONLY | O_NONBLOCK);
+        cmdFd = open(cmdPipe.c_str(), O_WRONLY);
         perror("open cmd");
     }
-    dataFd = open(dataPipe.c_str(), O_RDONLY | O_NONBLOCK);
+    dataFd = open(dataPipe.c_str(), O_RDONLY);
 
     if (cmdFd < 0 || dataFd < 0)
     {
@@ -118,30 +117,37 @@ WorldState Simulator::readWorld()
     while (true)
     {
 
-        ssize_t bytes = read(dataFd, buffer, sizeof(buffer) - 1);
+        int bytes = read(dataFd, buffer, sizeof(buffer) - 1);
 
-        if (bytes > 0)
+        if (bytes == 0)
+            break; // simulator closed pipe
+
+        if (bytes < 0)
         {
-            buffer[bytes] = '\0';
-            current += buffer;
+            perror("read");
+            break;
+        }
 
-            std::cout << "Simulator says:\n"
-                      << buffer << std::endl;
-            size_t pos;
-            while ((pos = current.find('\n')) != std::string::npos)
+        buffer[bytes] = '\0';
+        current += buffer;
+
+        std::cout << "Simulator says:\n"
+                  << buffer << std::endl;
+        size_t pos;
+        while ((pos = current.find('\n')) != std::string::npos)
+        {
+            std::string line = current.substr(0, pos);
+            current.erase(0, pos + 1);
+
+            lines.push_back(line);
+
+            if (line == "END")
             {
-                std::string line = current.substr(0, pos);
-                current.erase(0, pos + 1);
-
-                lines.push_back(line);
-
-                if (line == "END")
-                {
-                    return WorldState(lines);
-                }
+                return WorldState(lines);
             }
         }
     }
+    return WorldState(lines);
 }
 
 void Simulator::stop()

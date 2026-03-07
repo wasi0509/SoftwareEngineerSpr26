@@ -4,7 +4,8 @@
 #include "WorldState.h"
 #include <string>
 
-/*handles pipes and launching sim
+/*
+handles pipes and launching sim
 baseDir     /tmp/bugworld_<pid>; a temporary directory for FIFOs.
 cmdPipe     baseDir/cmd.pipe, used to send commands to simulator.
 dataPipe    baseDir/data.pipe, used to read responses from simulator.
